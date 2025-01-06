@@ -1,0 +1,114 @@
+.
+├── admin
+│   ├── backup_files
+│   ├── controller
+│   ├── gedcom_files
+│   ├── images
+│   ├── include
+│   ├── models
+│   ├── statistics
+│   ├── style_admin
+│   ├── update
+│   └── views
+├── app
+│   ├── controller
+│   ├── model
+│   └── routing
+├── assets
+│   ├── bootstrap
+│   ├── html2canvas
+│   ├── jquery
+│   ├── jqueryui
+│   ├── leaflet
+│   └── tinymce
+├── css
+├── docker
+│   ├── mariadb
+│   ├── nginx
+│   └── php
+├── docs
+│   └── analysis
+├── googlemaps
+│   └── img
+├── images
+├── include
+│   ├── 2fa_authentication
+│   ├── fanchart
+│   ├── geoplugin
+│   ├── glightbox
+│   ├── phprtflite
+│   ├── popup_menu
+│   └── tfpdf
+├── languages
+│   ├── cn
+│   ├── cs
+│   ├── da
+│   ├── de
+│   ├── default_timelines
+│   ├── en
+│   ├── en_FOR_TRANSIFEX
+│   ├── en_ca
+│   ├── en_us
+│   ├── es
+│   ├── es_mx
+│   ├── fi
+│   ├── fr
+│   ├── fur
+│   ├── gr
+│   ├── he
+│   ├── hu
+│   ├── id
+│   ├── it
+│   ├── nl
+│   ├── no
+│   ├── pl
+│   ├── pt
+│   ├── ro
+│   ├── ru
+│   ├── sk
+│   ├── sv
+│   └── tr
+├── media
+│   ├── cms
+│   ├── slideshow
+│   └── thumbs
+├── src
+│   ├── Controllers
+│   └── Services
+├── storage
+│   ├── cache
+│   ├── logs
+│   └── sessions
+├── styles
+│   ├── images_antique
+│   ├── images_dark
+│   ├── images_nightlock
+│   ├── images_silverline
+│   ├── images_sky_blue
+│   └── images_white
+├── tmp_files
+├── vendor
+│   ├── bin
+│   ├── clue
+│   ├── composer
+│   ├── evenement
+│   ├── fidry
+│   ├── friendsofphp
+│   ├── graham-campbell
+│   ├── myclabs
+│   ├── nikic
+│   ├── phar-io
+│   ├── phpmailer
+│   ├── phpoption
+│   ├── phpstan
+│   ├── phpunit
+│   ├── psr
+│   ├── react
+│   ├── sebastian
+│   ├── symfony
+│   ├── theseer
+│   └── vlucas
+└── views
+    └── partial
+
+111 directories
