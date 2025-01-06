@@ -84,8 +84,18 @@ This document outlines the modernization strategy for the HuMo-genealogy project
 - [x] Database seeding
 - [x] Factory system
 - [x] Development tooling
+- [x] Core interfaces
+  - ContainerInterface (PSR-11)
+  - DatabaseInterface
+  - ServiceProviderInterface
+  - RepositoryInterface
 
 ### In Progress
+- [ ] Dependency injection system
+  - Interface implementations
+  - Service providers
+  - Container implementation
+  - Constructor injection
 - [ ] Routing system
 - [ ] Controller implementation
 - [ ] Authentication system
@@ -93,7 +103,6 @@ This document outlines the modernization strategy for the HuMo-genealogy project
 - [ ] Asset management
 - [ ] Testing setup
 - [ ] Documentation updates
-- [ ] Dependency injection system
 
 ### Planned
 - [ ] API implementation
@@ -104,8 +113,11 @@ This document outlines the modernization strategy for the HuMo-genealogy project
 - [ ] Logging system
 - [ ] Command scheduling
 - [ ] Plugin system
-- [ ] Service providers
-- [ ] Scoped services
+- [ ] Additional interfaces
+  - Logger interface
+  - Cache interface
+  - Event dispatcher
+  - Config interface
 
 ## Directory Structure
 
@@ -117,7 +129,12 @@ HuMo-genealogy/
 │   │   ├── Config.php
 │   │   ├── Database.php
 │   │   ├── Model.php
-│   │   └── Repository.php
+│   │   ├── Repository.php
+│   │   └── Contracts/           # Interface definitions
+│   │       ├── ContainerInterface.php
+│   │       ├── DatabaseInterface.php
+│   │       ├── ServiceProviderInterface.php
+│   │       └── RepositoryInterface.php
 │   ├── Models/            # Domain models
 │   ├── Controllers/       # Request handlers
 │   ├── Services/          # Business logic

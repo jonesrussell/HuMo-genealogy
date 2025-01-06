@@ -14,6 +14,19 @@ strict_types: true
 namespace_style: psr4
 class_per_file: true
 
+# Interface Rules
+require_interfaces: true
+interface_suffix: Interface
+interface_namespace: Contracts
+interface_documentation: true
+interface_type_hints: true
+
+# Dependency Injection
+require_constructor_injection: true
+require_interface_injection: true
+require_container_registration: true
+require_service_providers: true
+
 # Testing
 test_framework: phpunit
 coverage_threshold: 80

@@ -31,11 +31,20 @@ This document tracks specific tasks for each modernization branch and phase. For
 - [ ] Add class mapping for legacy code
 
 ### Service Container
+- [x] Create core interfaces
+  - [x] ContainerInterface (PSR-11)
+  - [x] DatabaseInterface
+  - [x] ServiceProviderInterface
+  - [x] RepositoryInterface
+- [ ] Create additional interfaces
+  - [ ] LoggerInterface
+  - [ ] CacheInterface
+  - [ ] ConfigInterface
+  - [ ] EventDispatcherInterface
 - [ ] Implement PSR-11 container
 - [ ] Add service providers
 - [ ] Configure core services
 - [ ] Add dependency injection
-- [ ] Create core interfaces
 - [ ] Implement constructor injection
 - [ ] Add interface contracts
 - [ ] Configure autowiring
@@ -147,3 +156,19 @@ This document tracks specific tasks for each modernization branch and phase. For
 - [ ] Add backup system
 - [ ] Configure monitoring
 - [ ] Add health checks 
+
+### Interface Implementation
+- [ ] Update existing classes to implement interfaces
+  - [ ] Database class → DatabaseInterface
+  - [ ] Repository class → RepositoryInterface
+  - [ ] Container class → ContainerInterface
+- [ ] Create service providers
+  - [ ] DatabaseServiceProvider
+  - [ ] LoggerServiceProvider
+  - [ ] CacheServiceProvider
+  - [ ] EventServiceProvider
+- [ ] Write interface tests
+  - [ ] Container tests
+  - [ ] Database tests
+  - [ ] Repository tests
+  - [ ] Service provider tests 
