@@ -1,3 +1,5 @@
 /tests/
 .env
 vendor/
+admin/backup_files/
+admin/gedcom_files/
