@@ -12,7 +12,7 @@ class DummyClassFactory extends Factory
     public function definition(): array
     {
         return [
-            // Define default attributes
+            // Define factory attributes
         ];
     }
 
@@ -23,13 +23,8 @@ class DummyClassFactory extends Factory
     {
         $db = app()->getService('db');
         
-        $columns = implode(', ', array_keys($attributes));
-        $values = implode(', ', array_fill(0, count($attributes), '?'));
-        
-        $sql = "INSERT INTO table_name ({$columns}) VALUES ({$values})";
-        $db->query($sql, array_values($attributes));
-        
-        $id = $db->lastInsertId();
-        return array_merge(['id' => $id], $attributes);
+        // Define storage logic
+        // Return the created record
+        return $attributes;
     }
 } 

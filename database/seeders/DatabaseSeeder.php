@@ -7,11 +7,21 @@ use HumoGen\Core\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Run the database seeders.
+     * The seeders to run.
+     */
+    protected array $seeders = [
+        // Add your seeders here
+        // PersonSeeder::class,
+        // UserSeeder::class,
+    ];
+
+    /**
+     * Run the database seeds.
      */
     public function run(): void
     {
-        // Add your seeders here
-        $this->call(PersonSeeder::class);
+        foreach ($this->seeders as $seeder) {
+            $this->call($seeder);
+        }
     }
 } 

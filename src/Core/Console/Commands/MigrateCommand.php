@@ -78,9 +78,33 @@ class MigrateCommand extends Command
         }
 
         $this->info('Dropping all tables...');
-        // TODO: Implement drop all tables
         
-        return $this->migrate();
+        $db = app()->getService('db');
+        
+        // Disable foreign key checks
+        $db->query('SET FOREIGN_KEY_CHECKS = 0');
+        
+        try {
+            // Get all tables
+            $tables = $db->query('SHOW TABLES')->fetchAll(\PDO::FETCH_COLUMN);
+            
+            // Drop each table
+            foreach ($tables as $table) {
+                $db->query("DROP TABLE IF EXISTS `$table`");
+                $this->info("Dropped table: $table");
+            }
+            
+            // Re-enable foreign key checks
+            $db->query('SET FOREIGN_KEY_CHECKS = 1');
+            
+            return $this->migrate();
+        } catch (\Exception $e) {
+            // Make sure to re-enable foreign key checks even if something fails
+            $db->query('SET FOREIGN_KEY_CHECKS = 1');
+            
+            $this->error($e->getMessage());
+            return 1;
+        }
     }
 
     protected function showHelp(): void

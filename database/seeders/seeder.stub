@@ -7,10 +7,10 @@ use HumoGen\Core\Database\Seeder;
 class DummyClass extends Seeder
 {
     /**
-     * Run the seeder.
+     * Run the database seeds.
      */
     public function run(): void
     {
-        // Add seeding logic here
+        // Define seeding logic
     }
 } 
