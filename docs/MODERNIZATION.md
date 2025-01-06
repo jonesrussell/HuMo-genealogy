@@ -1,5 +1,14 @@
 # HuMo-genealogy Modernization Guide
 
+## Branching Strategy
+
+This modernization effort follows a structured branching strategy to ensure stable and manageable changes. See [BRANCHING.md](BRANCHING.md) for detailed information about:
+- Branch structure and naming
+- Implementation order
+- Quality gates
+- Conflict resolution
+- Documentation requirements
+
 ## License Compliance
 
 This modernization effort is carried out under the terms of the GNU General Public License v3 (GPL-3.0). All modifications and improvements:
