@@ -5,6 +5,7 @@ composer.phar
 # Environment files
 .env
 .env.*.local
+.env.hash
 
 # IDE files
 .idea/
