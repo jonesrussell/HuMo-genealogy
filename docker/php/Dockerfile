@@ -36,16 +36,19 @@ RUN chmod -R 755 /var/www/html/storage \
 ARG USERID=1000
 ARG GROUPID=1000
 
+# Modify www-data user/group
 RUN usermod -u ${USERID} www-data \
     && groupmod -g ${GROUPID} www-data \
     && chown -R www-data:www-data /var/www
 
-# Configure PHP-FPM to run as root (so it can switch to www-data)
-RUN sed -i 's/user = www-data/user = root/g' /usr/local/etc/php-fpm.d/www.conf \
-    && sed -i 's/group = www-data/group = root/g' /usr/local/etc/php-fpm.d/www.conf
+# Configure PHP-FPM to run as www-data
+RUN sed -i "s/user = www-data/user = www-data/g" /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i "s/group = www-data/group = www-data/g" /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i "s/listen.owner = www-data/listen.owner = www-data/g" /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i "s/listen.group = www-data/listen.group = www-data/g" /usr/local/etc/php-fpm.d/www.conf
 
 # Copy PHP config
 COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 
-# Keep root as main user
-USER root
+# Switch to www-data user
+USER www-data
