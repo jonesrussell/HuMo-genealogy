@@ -134,6 +134,9 @@ services:
       - "127.0.0.1:${DB_ADMIN_PORT}:8080"
     networks:
       - humo-network
+    environment:
+      - ADMINER_DEFAULT_SERVER=mariadb
+      - ADMINER_DESIGN=dracula
     deploy:
       resources:
         limits:
