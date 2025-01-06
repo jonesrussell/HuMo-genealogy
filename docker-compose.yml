@@ -1,17 +1,46 @@
+name: humo-genealogy-dev
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   nginx:
     image: docker.io/library/nginx:1.25.3-alpine
+    restart: unless-stopped
+    init: true
     ports:
       - "${APP_PORT}:80"
     volumes:
-      - ./:/var/www/html
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - php
+      php:
+        condition: service_healthy
     networks:
       - humo-network
     environment:
       - NGINX_PORT=${APP_PORT}
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
 
   php:
     build:
@@ -20,34 +49,54 @@ services:
       args:
         USERID: ${USERID:-1000}
         GROUPID: ${GROUPID:-1000}
+    restart: unless-stopped
+    init: true
     volumes:
-      - ./:/var/www/html
+      - ./:/var/www/html:ro
       - ./storage:/var/www/html/storage
       - ./media:/var/www/html/media
-      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
+      - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
     environment:
       - NGINX_PORT=${APP_PORT}
       - MYSQL_HOST=${MYSQL_HOST}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - PHP_ENV=development
     user: "${USERID:-1000}:${GROUPID:-1000}"
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     networks:
       - humo-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 512M
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    shm_size: '256mb'
 
   mariadb:
     image: docker.io/library/mariadb:11.6.2
+    restart: unless-stopped
+    init: true
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MARIADB_AUTO_UPGRADE=1
     ports:
-      - "${DB_PORT}:3306"
+      - "127.0.0.1:${DB_PORT}:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
+      - ./docker/mariadb/backup:/backup:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--password=${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -56,18 +105,55 @@ services:
       start_period: 30s
     networks:
       - humo-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.00'
+          memory: 1G
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    shm_size: '256mb'
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
 
-  # Add lightweight DB management
   adminer:
-    image: docker.io/library/adminer:latest
+    image: docker.io/library/adminer:4.8.1-standalone
+    restart: unless-stopped
+    init: true
     ports:
-      - "${DB_ADMIN_PORT}:8080"
+      - "127.0.0.1:${DB_ADMIN_PORT}:8080"
     networks:
       - humo-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      mariadb:
+        condition: service_healthy
 
 networks:
   humo-network:
     driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: humo-net
 
 volumes:
   mariadb_data:
+    driver: local
