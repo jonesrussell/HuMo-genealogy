@@ -1,0 +1,15 @@
+{
+    "php.validate.executablePath": "/usr/local/bin/php",
+    "php.validate.run": "onSave",
+    "remote.extensionKind": {
+        "bmewburn.vscode-intelephense-client": ["workspace"]
+    },
+    "docker.commands.attach": [
+        {
+            "label": "PHP Container",
+            "service": "php",
+            "containerName": "humo-genealogy-php-1",
+            "template": "docker exec -it ${containerName} /bin/bash"
+        }
+    ]
+}
