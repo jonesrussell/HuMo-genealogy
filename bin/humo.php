@@ -1,6 +1,9 @@
 <?php
 
-require __DIR__.'/../vendor/autoload.php';
+// Use absolute paths since we're in Docker
+define('APP_ROOT', '/var/www/html');
+
+require APP_ROOT . '/vendor/autoload.php';
 
 use HumoGen\Core\Console\Application;
 
