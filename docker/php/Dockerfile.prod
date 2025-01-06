@@ -1,0 +1,42 @@
+FROM php:8.3-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev
+
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application
+COPY . .
+RUN composer install --no-dev --optimize-autoloader
+
+# Create directories
+RUN mkdir -p storage media \
+    && chmod -R 755 storage media
+
+# Set up user
+ARG USERID=1000
+ARG GROUPID=1000
+
+RUN usermod -u ${USERID} www-data \
+    && groupmod -g ${GROUPID} www-data \
+    && chown -R www-data:www-data /var/www
+
+# Configure PHP-FPM
+RUN sed -i "s/user = www-data/user = www-data/g" /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i "s/group = www-data/group = www-data/g" /usr/local/etc/php-fpm.d/www.conf
+
+# Copy production config
+COPY docker/php/custom.prod.ini /usr/local/etc/php/conf.d/custom.ini
+
+USER www-data 

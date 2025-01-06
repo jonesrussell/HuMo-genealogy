@@ -1,0 +1,8 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./media:/var/www/html/media 

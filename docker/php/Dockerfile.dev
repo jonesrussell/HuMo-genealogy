@@ -22,14 +22,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy existing application directory
-COPY . .
-
-# Install dependencies
-RUN composer install
-
 # Set permissions for storage and media
-RUN chmod -R 755 /var/www/html/storage \
+RUN mkdir -p /var/www/html/storage /var/www/html/media \
+    && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/media
 
 # Create user with same ID as host (using ARG)
