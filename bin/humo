@@ -6,6 +6,8 @@ cd "$(dirname "$0")/.."
 # Default values
 CONTAINER="php"
 SERVICE="php"
+DB_CONTAINER="mysql"
+DUMPS_DIR="database/dumps"
 
 # Help text
 show_help() {
@@ -13,11 +15,19 @@ show_help() {
     echo
     echo "Usage: humo COMMAND [OPTIONS]"
     echo
-    echo "Commands:"
+    echo "Database Migration Commands:"
     echo "  migrate              Run database migrations"
     echo "  migrate:rollback     Rollback the last database migration"
     echo "  migrate:fresh        Drop all tables and re-run migrations"
     echo "  db:seed             Run database seeders"
+    echo
+    echo "Database State Commands:"
+    echo "  db:export [name]     Export database to a dump file (default: branch name)"
+    echo "  db:import [name]     Import database from a dump file (default: branch name)"
+    echo "  db:list             List available database dumps"
+    echo "  db:switch           Export current branch DB and import target branch DB"
+    echo
+    echo "Generator Commands:"
     echo "  make:migration      Create a new migration file"
     echo "  make:seeder         Create a new seeder file"
     echo "  make:factory        Create a new factory file"
@@ -43,6 +53,11 @@ check_containers() {
     }
 }
 
+# Get current git branch name
+get_branch_name() {
+    git branch --show-current
+}
+
 # Execute command in PHP container
 docker_exec() {
     docker compose exec -T "$SERVICE" php "$@"
@@ -52,6 +67,67 @@ docker_exec() {
 timestamp() {
     date "+%Y_%m_%d_%H%M%S"
 }
+
+# Ensure dumps directory exists
+ensure_dumps_dir() {
+    mkdir -p "$DUMPS_DIR"
+}
+
+# Export database
+export_db() {
+    local name=${1:-$(get_branch_name)}
+    ensure_dumps_dir
+    echo "Exporting database to $DUMPS_DIR/$name.sql..."
+    docker compose exec -T $DB_CONTAINER mysqldump -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" > "$DUMPS_DIR/$name.sql"
+    echo "Database exported successfully!"
+}
+
+# Import database
+import_db() {
+    local name=${1:-$(get_branch_name)}
+    local dump_file="$DUMPS_DIR/$name.sql"
+    
+    if [ ! -f "$dump_file" ]; then
+        echo "Error: Dump file $dump_file not found"
+        exit 1
+    }
+    
+    echo "Importing database from $dump_file..."
+    docker compose exec -T $DB_CONTAINER mysql -u"${MYSQL_USER}" -p"${MYSQL_PASSWORD}" "${MYSQL_DATABASE}" < "$dump_file"
+    echo "Database imported successfully!"
+}
+
+# List available dumps
+list_dumps() {
+    ensure_dumps_dir
+    echo "Available database dumps:"
+    ls -l "$DUMPS_DIR"
+}
+
+# Switch database between branches
+switch_db() {
+    local current_branch=$(get_branch_name)
+    echo "Current branch: $current_branch"
+    
+    # Export current database state
+    export_db "$current_branch"
+    
+    # Prompt for target branch
+    read -p "Enter target branch name to import: " target_branch
+    
+    if [ ! -f "$DUMPS_DIR/$target_branch.sql" ]; then
+        echo "Error: No database dump found for branch $target_branch"
+        exit 1
+    }
+    
+    # Import target database
+    import_db "$target_branch"
+}
+
+# Load environment variables
+if [ -f .env ]; then
+    export $(cat .env | grep -v '^#' | xargs)
+fi
 
 # Main script logic
 main() {
@@ -75,6 +151,18 @@ main() {
             ;;
         db:seed)
             docker_exec humo db:seed "${@:2}"
+            ;;
+        db:export)
+            export_db "${2}"
+            ;;
+        db:import)
+            import_db "${2}"
+            ;;
+        db:list)
+            list_dumps
+            ;;
+        db:switch)
+            switch_db
             ;;
         make:migration)
             if [ -z "$2" ]; then
@@ -116,4 +204,7 @@ main() {
             exit 1
             ;;
     esac
-} 
+}
+
+# Run main function with all arguments
+main "$@" 

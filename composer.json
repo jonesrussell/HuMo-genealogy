@@ -35,7 +35,11 @@
             "@cs-check",
             "@stan",
             "@test"
-        ]
+        ],
+        "migrate": "bin/humo migrate",
+        "migrate:rollback": "bin/humo migrate:rollback",
+        "migrate:fresh": "bin/humo migrate:fresh",
+        "db:seed": "bin/humo db:seed"
     },
     "config": {
         "sort-packages": true,

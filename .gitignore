@@ -35,3 +35,6 @@ composer.phar
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Database dumps
+database/dumps/
