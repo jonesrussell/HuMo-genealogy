@@ -35,6 +35,14 @@ This document tracks specific tasks for each modernization branch and phase. For
 - [ ] Add service providers
 - [ ] Configure core services
 - [ ] Add dependency injection
+- [ ] Create core interfaces
+- [ ] Implement constructor injection
+- [ ] Add interface contracts
+- [ ] Configure autowiring
+- [ ] Add scoped services
+- [ ] Implement lazy loading
+- [ ] Add circular dependency detection
+- [ ] Create container tests
 
 ### Error Handling
 - [ ] Implement error handler

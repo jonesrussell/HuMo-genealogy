@@ -38,10 +38,12 @@ This document outlines the modernization strategy for the HuMo-genealogy project
 
 1. **Clean Architecture**
    - Separation of concerns
-   - Dependency injection
+   - Interface-based dependency injection
    - SOLID principles
    - Repository pattern
-   - Service layer pattern
+   - Service provider pattern
+   - PSR-11 container
+   - Constructor injection
 
 2. **Modern PHP Practices**
    - PHP 8.2+ features
@@ -91,6 +93,7 @@ This document outlines the modernization strategy for the HuMo-genealogy project
 - [ ] Asset management
 - [ ] Testing setup
 - [ ] Documentation updates
+- [ ] Dependency injection system
 
 ### Planned
 - [ ] API implementation
@@ -101,6 +104,8 @@ This document outlines the modernization strategy for the HuMo-genealogy project
 - [ ] Logging system
 - [ ] Command scheduling
 - [ ] Plugin system
+- [ ] Service providers
+- [ ] Scoped services
 
 ## Directory Structure
 
