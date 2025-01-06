@@ -28,10 +28,24 @@ COPY . .
 # Install dependencies
 RUN composer install
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
+# Set permissions for storage and media
+RUN chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/media
 
-# Configure PHP
-COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
+# Create user with same ID as host (using ARG)
+ARG USERID=1000
+ARG GROUPID=1000
+
+RUN usermod -u ${USERID} www-data \
+    && groupmod -g ${GROUPID} www-data \
+    && chown -R www-data:www-data /var/www
+
+# Configure PHP-FPM to run as root (so it can switch to www-data)
+RUN sed -i 's/user = www-data/user = root/g' /usr/local/etc/php-fpm.d/www.conf \
+    && sed -i 's/group = www-data/group = root/g' /usr/local/etc/php-fpm.d/www.conf
+
+# Copy PHP config
+COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
+
+# Keep root as main user
+USER root
