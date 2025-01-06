@@ -10,7 +10,6 @@ class DbCommand extends Command
     protected string $description = 'Database management commands';
 
     protected string $dumpsDir = 'database/dumps';
-    protected string $dbContainer = 'mysql';
 
     public function handle(array $args = []): int
     {
@@ -44,8 +43,8 @@ class DbCommand extends Command
         $this->info("Exporting database to $dumpFile...");
 
         $command = sprintf(
-            'docker compose exec -T %s mysqldump -u"%s" -p"%s" "%s" > %s',
-            $this->dbContainer,
+            'mysqldump -h"%s" -u"%s" -p"%s" "%s" > %s',
+            $_ENV['MYSQL_HOST'] ?? 'mysql',
             $_ENV['MYSQL_USER'] ?? 'root',
             $_ENV['MYSQL_PASSWORD'] ?? '',
             $_ENV['MYSQL_DATABASE'] ?? 'humogen',
@@ -75,8 +74,8 @@ class DbCommand extends Command
         $this->info("Importing database from $dumpFile...");
 
         $command = sprintf(
-            'docker compose exec -T %s mysql -u"%s" -p"%s" "%s" < %s',
-            $this->dbContainer,
+            'mysql -h"%s" -u"%s" -p"%s" "%s" < %s',
+            $_ENV['MYSQL_HOST'] ?? 'mysql',
             $_ENV['MYSQL_USER'] ?? 'root',
             $_ENV['MYSQL_PASSWORD'] ?? '',
             $_ENV['MYSQL_DATABASE'] ?? 'humogen',

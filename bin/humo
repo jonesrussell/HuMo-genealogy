@@ -1,9 +1,7 @@
-#!/usr/bin/env php
-<?php
+#!/usr/bin/env bash
 
-require __DIR__.'/../vendor/autoload.php';
+# Make script executable from any directory
+cd "$(dirname "$0")/.."
 
-use HumoGen\Core\Console\Application;
-
-$app = new Application();
-exit($app->run($argv)); 
+# Run the command in the PHP container
+docker compose exec -T php php bin/humo.php "$@" 

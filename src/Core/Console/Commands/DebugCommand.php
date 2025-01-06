@@ -16,8 +16,6 @@ class DebugCommand extends Command
         switch ($type) {
             case 'env':
                 return $this->debugEnv();
-            case 'docker':
-                return $this->debugDocker();
             case 'db':
                 return $this->debugDatabase();
             case 'all':
@@ -37,45 +35,11 @@ class DebugCommand extends Command
         echo "Current Branch: " . trim(shell_exec('git branch --show-current')) . "\n\n";
         
         echo "Environment Variables:\n";
-        if (file_exists('.env')) {
-            echo "Found .env file:\n";
-            $env = file_get_contents('.env');
-            $lines = array_filter(
-                explode("\n", $env),
-                fn($line) => !empty($line) && $line[0] !== '#'
-            );
-            sort($lines);
-            echo implode("\n", $lines) . "\n";
-        } else {
-            echo "No .env file found\n";
+        foreach ($_ENV as $key => $value) {
+            if (!str_starts_with($key, 'MYSQL_PASSWORD')) {
+                echo "$key=$value\n";
+            }
         }
-
-        return 0;
-    }
-
-    protected function debugDocker(): int
-    {
-        $this->info("Docker Status:");
-        $this->info("-------------");
-
-        // Check Docker version
-        $dockerVersion = shell_exec('docker version --format "{{.Server.Version}}"');
-        echo "Docker Version: $dockerVersion";
-
-        // Check Docker Compose version
-        $composeVersion = shell_exec('docker compose version');
-        echo "Docker Compose Version: $composeVersion";
-
-        // Check container status
-        echo "\nContainer Status:\n";
-        echo shell_exec('docker compose ps');
-
-        // Show container logs
-        echo "\nContainer Logs (last 10 lines):\n";
-        echo "PHP Container:\n";
-        echo shell_exec('docker compose logs --tail=10 php');
-        echo "\nMySQL Container:\n";
-        echo shell_exec('docker compose logs --tail=10 mysql');
 
         return 0;
     }
@@ -87,11 +51,10 @@ class DebugCommand extends Command
 
         $db = app()->getService('db');
         
-        echo "Database Container: mysql\n";
-        echo "Database Name: " . ($_ENV['MYSQL_DATABASE'] ?? 'Not set') . "\n";
-        echo "Database User: " . ($_ENV['MYSQL_USER'] ?? 'Not set') . "\n";
-        echo "Database Host: " . ($_ENV['MYSQL_HOST'] ?? 'Not set') . "\n";
-        echo "Database Port: " . ($_ENV['MYSQL_PORT'] ?? 'Not set') . "\n\n";
+        echo "Database Host: " . ($_ENV['MYSQL_HOST'] ?? 'mysql') . "\n";
+        echo "Database Name: " . ($_ENV['MYSQL_DATABASE'] ?? 'humogen') . "\n";
+        echo "Database User: " . ($_ENV['MYSQL_USER'] ?? 'root') . "\n";
+        echo "Database Port: " . ($_ENV['MYSQL_PORT'] ?? '3306') . "\n\n";
 
         try {
             $db->query("SELECT 1");
@@ -110,6 +73,18 @@ class DebugCommand extends Command
             if ($result) {
                 echo "\nDatabase Size: {$result['Size (MB)']} MB\n";
             }
+
+            // Show tables
+            $sql = "SHOW TABLES";
+            $stmt = $db->query($sql);
+            $tables = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+            if (!empty($tables)) {
+                echo "\nTables:\n";
+                foreach ($tables as $table) {
+                    echo "- $table\n";
+                }
+            }
         } catch (\Exception $e) {
             $this->error("✗ Database connection failed");
             $this->error($e->getMessage());
@@ -126,10 +101,6 @@ class DebugCommand extends Command
         echo "\n";
 
         $result = $this->debugEnv();
-        if ($result !== 0) return $result;
-
-        echo "\n";
-        $result = $this->debugDocker();
         if ($result !== 0) return $result;
 
         echo "\n";
