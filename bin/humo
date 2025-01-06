@@ -10,11 +10,11 @@ if ! docker info > /dev/null 2>&1; then
 fi
 
 # Check if containers are running
-if ! docker compose ps | grep -q "php.*running"; then
-    echo "Error: Docker containers are not running"
+if ! docker compose ps | grep -q "humo-genealogy-dev-php-1.*healthy"; then
+    echo "Error: PHP container is not running or not healthy"
     echo "Please start the containers with: docker compose up -d"
     exit 1
 fi
 
-# Run the command in the PHP container
-docker compose exec -T php php /var/www/html/bin/humo.php "$@" 
+# Run the command in the PHP container from the project root
+docker compose exec -T -w /var/www/html php php bin/humo.php "$@" 
