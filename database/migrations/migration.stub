@@ -1,0 +1,26 @@
+<?php
+
+use HumoGen\Core\Database\Migration;
+use HumoGen\Core\Database\Schema;
+use HumoGen\Core\Database\Table;
+
+class DummyClass extends Migration
+{
+    /**
+     * Run the migration.
+     */
+    public function up(): void
+    {
+        Schema::create('table_name', function (Table $table) {
+            // Define table structure
+        });
+    }
+
+    /**
+     * Reverse the migration.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('table_name');
+    }
+} 

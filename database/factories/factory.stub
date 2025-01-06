@@ -1,0 +1,35 @@
+<?php
+
+namespace Database\Factories;
+
+use HumoGen\Core\Database\Factory;
+
+class DummyClassFactory extends Factory
+{
+    /**
+     * Define the model's default state.
+     */
+    public function definition(): array
+    {
+        return [
+            // Define default attributes
+        ];
+    }
+
+    /**
+     * Store the model in the database.
+     */
+    protected function store(array $attributes): array
+    {
+        $db = app()->getService('db');
+        
+        $columns = implode(', ', array_keys($attributes));
+        $values = implode(', ', array_fill(0, count($attributes), '?'));
+        
+        $sql = "INSERT INTO table_name ({$columns}) VALUES ({$values})";
+        $db->query($sql, array_values($attributes));
+        
+        $id = $db->lastInsertId();
+        return array_merge(['id' => $id], $attributes);
+    }
+} 

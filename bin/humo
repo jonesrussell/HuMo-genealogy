@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+# Make script executable from any directory
+cd "$(dirname "$0")/.."
+
+# Default values
+CONTAINER="php"
+SERVICE="php"
+
+# Help text
+show_help() {
+    echo "HuMo-genealogy CLI Tool"
+    echo
+    echo "Usage: humo COMMAND [OPTIONS]"
+    echo
+    echo "Commands:"
+    echo "  migrate              Run database migrations"
+    echo "  migrate:rollback     Rollback the last database migration"
+    echo "  migrate:fresh        Drop all tables and re-run migrations"
+    echo "  db:seed             Run database seeders"
+    echo "  make:migration      Create a new migration file"
+    echo "  make:seeder         Create a new seeder file"
+    echo "  make:factory        Create a new factory file"
+    echo
+    echo "Options:"
+    echo "  --help              Show this help message"
+}
+
+# Check if Docker is running
+check_docker() {
+    if ! docker info > /dev/null 2>&1; then
+        echo "Error: Docker is not running"
+        exit 1
+    }
+}
+
+# Check if containers are running
+check_containers() {
+    if ! docker compose ps | grep -q "php.*running"; then
+        echo "Error: Docker containers are not running"
+        echo "Please start the containers with: docker compose up -d"
+        exit 1
+    }
+}
+
+# Execute command in PHP container
+docker_exec() {
+    docker compose exec -T "$SERVICE" php "$@"
+}
+
+# Create timestamp for migration name
+timestamp() {
+    date "+%Y_%m_%d_%H%M%S"
+}
+
+# Main script logic
+main() {
+    check_docker
+    check_containers
+
+    case "$1" in
+        migrate)
+            docker_exec humo migrate "${@:2}"
+            ;;
+        migrate:rollback)
+            docker_exec humo migrate rollback
+            ;;
+        migrate:fresh)
+            echo "Warning: This will drop all tables and re-run migrations"
+            read -p "Are you sure you want to continue? [y/N] " -n 1 -r
+            echo
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                docker_exec humo migrate fresh
+            fi
+            ;;
+        db:seed)
+            docker_exec humo db:seed "${@:2}"
+            ;;
+        make:migration)
+            if [ -z "$2" ]; then
+                echo "Error: Migration name is required"
+                echo "Usage: humo make:migration <name>"
+                exit 1
+            fi
+            name=$(timestamp)_"$2"
+            cp database/migrations/migration.stub database/migrations/"$name".php
+            sed -i "s/DummyClass/$2/g" database/migrations/"$name".php
+            echo "Created migration: database/migrations/$name.php"
+            ;;
+        make:seeder)
+            if [ -z "$2" ]; then
+                echo "Error: Seeder name is required"
+                echo "Usage: humo make:seeder <name>"
+                exit 1
+            fi
+            cp database/seeders/seeder.stub database/seeders/"$2".php
+            sed -i "s/DummyClass/$2/g" database/seeders/"$2".php
+            echo "Created seeder: database/seeders/$2.php"
+            ;;
+        make:factory)
+            if [ -z "$2" ]; then
+                echo "Error: Factory name is required"
+                echo "Usage: humo make:factory <name>"
+                exit 1
+            fi
+            cp database/factories/factory.stub database/factories/"$2"Factory.php
+            sed -i "s/DummyClass/$2/g" database/factories/"$2"Factory.php
+            echo "Created factory: database/factories/${2}Factory.php"
+            ;;
+        --help|-h)
+            show_help
+            ;;
+        *)
+            echo "Error: Unknown command '$1'"
+            echo "Run 'humo --help' for usage information"
+            exit 1
+            ;;
+    esac
+} 

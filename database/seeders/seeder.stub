@@ -1,0 +1,16 @@
+<?php
+
+namespace Database\Seeders;
+
+use HumoGen\Core\Database\Seeder;
+
+class DummyClass extends Seeder
+{
+    /**
+     * Run the seeder.
+     */
+    public function run(): void
+    {
+        // Add seeding logic here
+    }
+} 
