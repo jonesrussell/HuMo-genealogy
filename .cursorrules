@@ -1,0 +1,55 @@
+# Cursor Rules for HuMo-genealogy
+
+# Code Style
+indent_style: space
+indent_size: 4
+end_of_line: lf
+charset: utf-8
+trim_trailing_whitespace: true
+insert_final_newline: true
+
+# PHP Rules
+php_version: 8.2
+strict_types: true
+namespace_style: psr4
+class_per_file: true
+
+# Testing
+test_framework: phpunit
+coverage_threshold: 80
+test_path: tests
+
+# Documentation
+require_phpdoc: true
+phpdoc_style: clean
+require_return_types: true
+require_param_types: true
+
+# Security
+require_csrf: true
+require_input_validation: true
+require_output_escaping: true
+require_authentication: true
+
+# Database
+require_prepared_statements: true
+require_transactions: true
+require_migrations: true
+
+# Error Handling
+require_try_catch: true
+require_logging: true
+require_type_hints: true
+
+# Performance
+max_method_length: 20
+max_class_length: 200
+max_parameters: 5
+cyclomatic_complexity: 10
+
+# Git
+ignore_vendor: true
+ignore_env: true
+ignore_ide: true
+ignore_logs: true
+ignore_cache: true 
