@@ -1,5 +1,15 @@
 # HuMo-genealogy Modernization Guide
 
+## Transition Plan
+
+This modernization effort is following a structured transition plan to ensure smooth implementation of changes. See [TRANSITION.md](TRANSITION.md) for detailed information about:
+- Current state and target state
+- Implementation steps
+- Risk management
+- Timeline and milestones
+- Success criteria
+- Rollback procedures
+
 ## Branching Strategy
 
 This modernization effort follows a structured branching strategy to ensure stable and manageable changes. See [BRANCHING.md](BRANCHING.md) for detailed information about:
