@@ -5,6 +5,14 @@ namespace HumoGen\Core\Database;
 class Schema
 {
     /**
+     * Escape a database identifier (table or column name).
+     */
+    protected static function escapeIdentifier(string $identifier): string
+    {
+        return '`' . str_replace('`', '``', $identifier) . '`';
+    }
+
+    /**
      * Create a new table.
      */
     public static function create(string $table, callable $callback): void
@@ -51,8 +59,9 @@ class Schema
     public static function hasTable(string $table): bool
     {
         $db = app()->getService('db');
-        $sql = "SHOW TABLES LIKE ?";
-        $stmt = $db->query($sql, [$table]);
+        $escapedTable = static::escapeIdentifier($table);
+        $sql = "SHOW TABLES LIKE " . $db->quote($table);
+        $stmt = $db->query($sql);
         return (bool) $stmt->fetch();
     }
 
@@ -62,8 +71,9 @@ class Schema
     public static function hasColumn(string $table, string $column): bool
     {
         $db = app()->getService('db');
-        $sql = "SHOW COLUMNS FROM {$table} LIKE ?";
-        $stmt = $db->query($sql, [$column]);
+        $escapedTable = static::escapeIdentifier($table);
+        $sql = "SHOW COLUMNS FROM {$escapedTable} LIKE " . $db->quote($column);
+        $stmt = $db->query($sql);
         return (bool) $stmt->fetch();
     }
 
@@ -73,7 +83,8 @@ class Schema
     public static function getColumnListing(string $table): array
     {
         $db = app()->getService('db');
-        $sql = "SHOW COLUMNS FROM {$table}";
+        $escapedTable = static::escapeIdentifier($table);
+        $sql = "SHOW COLUMNS FROM {$escapedTable}";
         $stmt = $db->query($sql);
         return array_column($stmt->fetchAll(), 'Field');
     }

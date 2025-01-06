@@ -11,6 +11,14 @@ class ForeignKeyDefinition
     protected string $onDelete = '';
     protected string $onUpdate = '';
 
+    /**
+     * Escape a database identifier (table or column name).
+     */
+    protected function escapeIdentifier(string $identifier): string
+    {
+        return '`' . str_replace('`', '``', $identifier) . '`';
+    }
+
     public function __construct(string $table, string $column)
     {
         $this->table = $table;
@@ -58,17 +66,21 @@ class ForeignKeyDefinition
      */
     public function execute($db): void
     {
-        $constraintName = "fk_{$this->table}_{$this->column}";
+        $escapedTable = $this->escapeIdentifier($this->table);
+        $escapedColumn = $this->escapeIdentifier($this->column);
+        $escapedReferencedTable = $this->escapeIdentifier($this->on);
+        $escapedReferencedColumn = $this->escapeIdentifier($this->references);
+        $escapedConstraint = $this->escapeIdentifier("fk_{$this->table}_{$this->column}");
         
-        $sql = "ALTER TABLE {$this->table} ADD CONSTRAINT {$constraintName} ";
-        $sql .= "FOREIGN KEY ({$this->column}) REFERENCES {$this->on}({$this->references})";
+        $sql = "ALTER TABLE {$escapedTable} ADD CONSTRAINT {$escapedConstraint} ";
+        $sql .= "FOREIGN KEY ({$escapedColumn}) REFERENCES {$escapedReferencedTable}({$escapedReferencedColumn})";
         
         if ($this->onDelete) {
-            $sql .= " ON DELETE {$this->onDelete}";
+            $sql .= " ON DELETE " . $db->quote($this->onDelete);
         }
         
         if ($this->onUpdate) {
-            $sql .= " ON UPDATE {$this->onUpdate}";
+            $sql .= " ON UPDATE " . $db->quote($this->onUpdate);
         }
 
         $db->query($sql);

@@ -32,6 +32,14 @@ class Connection
         return $stmt;
     }
 
+    /**
+     * Quote a string for use in a query.
+     */
+    public function quote(string $value): string
+    {
+        return $this->pdo->quote($value);
+    }
+
     public function lastInsertId(): string
     {
         return $this->pdo->lastInsertId();

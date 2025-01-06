@@ -34,6 +34,15 @@ class Application
         $dotenv = Dotenv::createImmutable(dirname(__DIR__, 2));
         $dotenv->safeLoad();
 
+        // Set defaults if not present
+        $_ENV['APP_NAME'] = $_ENV['APP_NAME'] ?? 'HuMo-genealogy';
+        $_ENV['APP_ENV'] = $_ENV['APP_ENV'] ?? 'local';
+        $_ENV['DB_HOST'] = $_ENV['DB_HOST'] ?? 'mariadb';
+        $_ENV['DB_DATABASE'] = $_ENV['DB_DATABASE'] ?? 'humogen';
+        $_ENV['DB_USERNAME'] = $_ENV['DB_USERNAME'] ?? 'root';
+        $_ENV['DB_PASSWORD'] = $_ENV['DB_PASSWORD'] ?? '';
+        $_ENV['DB_PORT'] = $_ENV['DB_PORT'] ?? '3306';
+
         // Map legacy variables if they exist
         if (isset($_ENV['MYSQL_HOST'])) {
             $_ENV['DB_HOST'] = $_ENV['MYSQL_HOST'];
@@ -51,24 +60,32 @@ class Application
             $_ENV['DB_PORT'] = $_ENV['MYSQL_PORT'];
         }
 
-        // Only validate essential variables with fallbacks
-        $dotenv->required('APP_NAME')->default('HuMo-genealogy');
-        $dotenv->required('APP_ENV')->default('local');
-        $dotenv->required('DB_HOST')->default('mariadb');
-        $dotenv->required('DB_DATABASE')->default('humogen');
-        $dotenv->required('DB_USERNAME')->default('root');
-        $dotenv->required('DB_PASSWORD')->default('');
+        // Validate that we have the minimum required variables
+        $dotenv->required([
+            'APP_NAME',
+            'APP_ENV',
+            'DB_HOST',
+            'DB_DATABASE',
+            'DB_USERNAME',
+            'DB_PASSWORD'
+        ]);
     }
 
     protected function registerServices(): void
     {
+        // We're in Docker if we're running the command through docker compose exec
+        $inDocker = getenv('DOCKER_CONTAINER') === 'true';
+        
+        // Use internal Docker port if running in container, otherwise use host port
+        $port = $inDocker ? '3306' : ($_ENV['DB_PORT'] ?? '3306');
+
         // Register database service
         $this->services['db'] = new Database\Connection(
             $_ENV['DB_HOST'],
             $_ENV['DB_DATABASE'],
             $_ENV['DB_USERNAME'],
             $_ENV['DB_PASSWORD'],
-            $_ENV['DB_PORT'] ?? '3306'
+            $port
         );
     }
 

@@ -10,6 +10,14 @@ class Table
     public string $charset = '';
     public string $collation = '';
 
+    /**
+     * Escape a database identifier (table or column name).
+     */
+    protected function escapeIdentifier(string $identifier): string
+    {
+        return '`' . str_replace('`', '``', $identifier) . '`';
+    }
+
     public function __construct(string $table, bool $exists = false)
     {
         $this->table = $table;
@@ -68,12 +76,13 @@ class Table
 
         // Update charset/collation if set
         if ($this->charset || $this->collation) {
-            $sql = "ALTER TABLE {$this->table}";
+            $escapedTable = $this->escapeIdentifier($this->table);
+            $sql = "ALTER TABLE {$escapedTable}";
             if ($this->charset) {
-                $sql .= " CHARACTER SET = {$this->charset}";
+                $sql .= " CHARACTER SET = " . $db->quote($this->charset);
             }
             if ($this->collation) {
-                $sql .= " COLLATE = {$this->collation}";
+                $sql .= " COLLATE = " . $db->quote($this->collation);
             }
             $db->query($sql);
         }
@@ -86,12 +95,14 @@ class Table
     {
         switch ($command['type']) {
             case 'dropForeign':
-                $constraintName = "fk_{$command['table']}_{$command['column']}";
-                $sql = "ALTER TABLE {$command['table']} DROP FOREIGN KEY {$constraintName}";
+                $escapedTable = $this->escapeIdentifier($command['table']);
+                $escapedConstraint = $this->escapeIdentifier("fk_{$command['table']}_{$command['column']}");
+                $sql = "ALTER TABLE {$escapedTable} DROP FOREIGN KEY {$escapedConstraint}";
                 $db->query($sql);
                 break;
             case 'dropTable':
-                $sql = "DROP TABLE IF EXISTS {$command['table']}";
+                $escapedTable = $this->escapeIdentifier($command['table']);
+                $sql = "DROP TABLE IF EXISTS {$escapedTable}";
                 $db->query($sql);
                 break;
         }

@@ -3,11 +3,30 @@
 # Make script executable from any directory
 cd "$(dirname "$0")/.."
 
-# Check if Docker is running
-if ! docker info > /dev/null 2>&1; then
-    echo "Error: Docker is not running"
-    exit 1
-fi
+# Function to check if we're running in Docker
+is_docker() {
+    [ -f /.dockerenv ] || grep -q docker /proc/1/cgroup
+}
+
+# Function to check if Docker is running
+is_docker_running() {
+    docker info > /dev/null 2>&1
+}
+
+# Function to wait for MariaDB
+wait_for_mariadb() {
+    echo "Waiting for MariaDB to be ready..."
+    for i in {1..30}; do
+        if docker compose exec mariadb mysqladmin ping -h localhost -u root --silent; then
+            echo "MariaDB is ready"
+            return 0
+        fi
+        echo -n "."
+        sleep 1
+    done
+    echo "MariaDB did not become ready in time"
+    return 1
+}
 
 # Function to check if containers need reload
 check_env_changes() {
@@ -16,24 +35,31 @@ check_env_changes() {
         docker compose down
         docker compose up -d
         md5sum .env | cut -d' ' -f1 > .env.hash
-        # Wait for containers to be healthy
-        echo "Waiting for containers to be ready..."
-        sleep 5
+        wait_for_mariadb || exit 1
     fi
 }
 
-# Check if containers are running and up to date
-check_env_changes
+# Check if we're already inside a Docker container
+if is_docker; then
+    # We're inside Docker, run PHP directly
+    exec php bin/humo.php "$@"
+else
+    # We're on the host, check if we should use Docker
+    if [ -f "docker-compose.yml" ] && is_docker_running; then
+        # Check if containers are running and up to date
+        check_env_changes
 
-# Check if containers are healthy
-if ! docker compose ps | grep -q "humo-genealogy-dev-php-1.*healthy"; then
-    echo "Error: PHP container is not running or not healthy"
-    echo "Please check docker compose logs for issues"
-    exit 1
-fi
+        # Check if containers are healthy
+        if ! docker compose ps | grep -q "humo-genealogy-dev-php-1.*healthy"; then
+            echo "Error: PHP container is not running or not healthy"
+            echo "Please check docker compose logs for issues"
+            exit 1
+        fi
 
-# Copy .env file into container
-docker compose cp .env php:/var/www/html/.env
-
-# Run the command in the PHP container
-docker compose exec -T -w /var/www/html php php bin/humo.php "$@" 
+        # Run the command in the PHP container
+        exec docker compose exec -T -e DOCKER_CONTAINER=true -w /var/www/html php php bin/humo.php "$@"
+    else
+        # No Docker or not configured for Docker, run PHP directly
+        exec php bin/humo.php "$@"
+    fi
+fi 
