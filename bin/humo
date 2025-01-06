@@ -9,12 +9,31 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Check if containers are running
+# Function to check if containers need reload
+check_env_changes() {
+    if [ ! -f ".env.hash" ] || [ "$(md5sum .env | cut -d' ' -f1)" != "$(cat .env.hash)" ]; then
+        echo "Environment changes detected, reloading containers..."
+        docker compose down
+        docker compose up -d
+        md5sum .env | cut -d' ' -f1 > .env.hash
+        # Wait for containers to be healthy
+        echo "Waiting for containers to be ready..."
+        sleep 5
+    fi
+}
+
+# Check if containers are running and up to date
+check_env_changes
+
+# Check if containers are healthy
 if ! docker compose ps | grep -q "humo-genealogy-dev-php-1.*healthy"; then
     echo "Error: PHP container is not running or not healthy"
-    echo "Please start the containers with: docker compose up -d"
+    echo "Please check docker compose logs for issues"
     exit 1
 fi
 
-# Run the command in the PHP container from the project root
+# Copy .env file into container
+docker compose cp .env php:/var/www/html/.env
+
+# Run the command in the PHP container
 docker compose exec -T -w /var/www/html php php bin/humo.php "$@" 

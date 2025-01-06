@@ -6,10 +6,10 @@ use Dotenv\Dotenv;
 
 class Application
 {
-    private static ?self $instance = null;
-    private array $container = [];
+    protected static ?self $instance = null;
+    protected array $services = [];
 
-    private function __construct()
+    protected function __construct()
     {
         $this->bootstrap();
     }
@@ -23,64 +23,61 @@ class Application
         return self::$instance;
     }
 
-    private function bootstrap(): void
+    protected function bootstrap(): void
     {
         $this->loadEnvironment();
-        $this->registerErrorHandling();
-        $this->initializeSession();
         $this->registerServices();
     }
 
-    private function loadEnvironment(): void
+    protected function loadEnvironment(): void
     {
         $dotenv = Dotenv::createImmutable(dirname(__DIR__, 2));
-        $dotenv->load();
-        $dotenv->required([
-            'APP_NAME',
-            'APP_ENV',
-            'DB_HOST',
-            'DB_DATABASE',
-            'DB_USERNAME',
-            'DB_PASSWORD',
-        ]);
-    }
+        $dotenv->safeLoad();
 
-    private function registerErrorHandling(): void
-    {
-        error_reporting(E_ALL);
-        $debug = $_ENV['APP_DEBUG'] ?? false;
-        ini_set('display_errors', $debug ? '1' : '0');
-        ini_set('display_startup_errors', $debug ? '1' : '0');
-
-        if (!$debug) {
-            ini_set('log_errors', '1');
-            ini_set('error_log', dirname(__DIR__, 2) . '/storage/logs/php-error.log');
+        // Map legacy variables if they exist
+        if (isset($_ENV['MYSQL_HOST'])) {
+            $_ENV['DB_HOST'] = $_ENV['MYSQL_HOST'];
         }
-    }
-
-    private function initializeSession(): void
-    {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
+        if (isset($_ENV['MYSQL_DATABASE'])) {
+            $_ENV['DB_DATABASE'] = $_ENV['MYSQL_DATABASE'];
         }
-        // Regenerate session ID periodically for security
-        if (!isset($_SESSION['_last_regeneration']) || 
-            (time() - $_SESSION['_last_regeneration']) > 3600
-        ) {
-            session_regenerate_id(true);
-            $_SESSION['_last_regeneration'] = time();
+        if (isset($_ENV['MYSQL_USER'])) {
+            $_ENV['DB_USERNAME'] = $_ENV['MYSQL_USER'];
         }
+        if (isset($_ENV['MYSQL_PASSWORD'])) {
+            $_ENV['DB_PASSWORD'] = $_ENV['MYSQL_PASSWORD'];
+        }
+        if (isset($_ENV['MYSQL_PORT'])) {
+            $_ENV['DB_PORT'] = $_ENV['MYSQL_PORT'];
+        }
+
+        // Only validate essential variables with fallbacks
+        $dotenv->required('APP_NAME')->default('HuMo-genealogy');
+        $dotenv->required('APP_ENV')->default('local');
+        $dotenv->required('DB_HOST')->default('mariadb');
+        $dotenv->required('DB_DATABASE')->default('humogen');
+        $dotenv->required('DB_USERNAME')->default('root');
+        $dotenv->required('DB_PASSWORD')->default('');
     }
 
-    private function registerServices(): void
+    protected function registerServices(): void
     {
-        // Register core services
-        $this->container['config'] = new Config();
-        $this->container['db'] = new Database();
+        // Register database service
+        $this->services['db'] = new Database\Connection(
+            $_ENV['DB_HOST'],
+            $_ENV['DB_DATABASE'],
+            $_ENV['DB_USERNAME'],
+            $_ENV['DB_PASSWORD'],
+            $_ENV['DB_PORT'] ?? '3306'
+        );
     }
 
-    public function getService(string $name): mixed
+    public function getService(string $name)
     {
-        return $this->container[$name] ?? null;
+        if (!isset($this->services[$name])) {
+            throw new \RuntimeException("Service '$name' not found.");
+        }
+
+        return $this->services[$name];
     }
 } 

@@ -19,7 +19,10 @@
     "autoload": {
         "psr-4": {
             "HumoGen\\": "src/"
-        }
+        },
+        "files": [
+            "src/Core/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
