@@ -97,4 +97,16 @@ class Application
 
         return $this->services[$name];
     }
+
+    /**
+     * Bind a service to the container.
+     */
+    public function bind(string $name, mixed $service): void
+    {
+        if (is_callable($service)) {
+            $this->services[$name] = $service();
+        } else {
+            $this->services[$name] = $service;
+        }
+    }
 } 

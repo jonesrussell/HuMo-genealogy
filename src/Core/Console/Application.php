@@ -11,6 +11,7 @@ class Application
         Commands\DebugCommand::class,
         Commands\MakeCommand::class,
         Commands\DbCommand::class,
+        Commands\ComposerCommand::class,
     ];
 
     public function __construct()

@@ -47,6 +47,11 @@ max_class_length: 200
 max_parameters: 5
 cyclomatic_complexity: 10
 
+# File Management
+check_existing_files: true
+prevent_duplicate_files: true
+require_file_search: true
+
 # Git
 ignore_vendor: true
 ignore_env: true
