@@ -1,5 +1,16 @@
 # HuMo-genealogy Modernization Guide
 
+## License Compliance
+
+This modernization effort is carried out under the terms of the GNU General Public License v3 (GPL-3.0). All modifications and improvements:
+- Maintain the original copyright notices
+- Keep the codebase free and open source
+- Preserve user freedoms to modify and distribute
+- Include clear documentation of changes
+- Provide access to the complete source code
+
+Original copyright (C) 2008-2024 Huub Mons and contributors.
+
 ## Overview
 
 This document outlines the modernization strategy for the HuMo-genealogy project, transforming it into a modern, maintainable, and secure PHP application.
