@@ -1,5 +1,37 @@
-/tests/
+# Dependencies
+/vendor/
+composer.phar
+
+# Environment files
 .env
-vendor/
-admin/backup_files/
-admin/gedcom_files/
+.env.*.local
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Cache and logs
+/var/
+/tmp/
+/logs/
+*.log
+*.cache
+
+# Build artifacts
+/build/
+/dist/
+
+# Application specific
+/admin/backup_files/
+/admin/gedcom_files/
+/storage/*.key
+
+# Testing
+.phpunit.result.cache
+/coverage/
+
+# OS specific
+.DS_Store
+Thumbs.db

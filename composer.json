@@ -1,5 +1,46 @@
 {
+    "name": "humo-gen/humo-genealogy",
+    "description": "HuMo-genealogy - PHP based genealogy software",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
     "require": {
-        "phpmailer/phpmailer": "^6.9"
-    }
+        "php": ">=8.1",
+        "phpmailer/phpmailer": "^6.9",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "vlucas/phpdotenv": "^5.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0",
+        "phpstan/phpstan": "^1.10",
+        "friendsofphp/php-cs-fixer": "^3.40",
+        "symfony/var-dumper": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "HumoGen\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "HumoGen\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "cs-check": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix",
+        "stan": "phpstan analyse",
+        "check": [
+            "@cs-check",
+            "@stan",
+            "@test"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

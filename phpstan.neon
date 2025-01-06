@@ -1,0 +1,14 @@
+parameters:
+    level: 5
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - vendor/*
+        - storage/*
+        - tmp_files/*
+    checkMissingIterableValueType: false
+    checkGenericClassInNonGenericObjectType: false
+    ignoreErrors:
+        # Add specific error patterns to ignore if needed
+        # - '#Pattern to ignore#' 
