@@ -42,8 +42,6 @@ services:
     init: true
     volumes:
       - ./:/var/www/html
-      - ./storage:/var/www/html/storage
-      - ./media:/var/www/html/media
       - ./docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini
       - vscode-server:/home/appuser/.vscode-server
     environment:

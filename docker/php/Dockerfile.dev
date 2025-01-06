@@ -19,7 +19,8 @@ RUN docker-php-ext-install -j$(nproc) \
     pcntl \
     bcmath \
     gd \
-    opcache
+    opcache \
+    zip
 
 # Install composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
@@ -55,9 +56,6 @@ RUN sed -i "s/user = www-data/user = appuser/g" /usr/local/etc/php-fpm.d/www.con
     sed -i "s/group = www-data/group = appgroup/g" /usr/local/etc/php-fpm.d/www.conf && \
     sed -i "s/listen.owner = www-data/listen.owner = appuser/g" /usr/local/etc/php-fpm.d/www.conf && \
     sed -i "s/listen.group = www-data/listen.group = appgroup/g" /usr/local/etc/php-fpm.d/www.conf
-
-# Copy PHP config
-COPY docker/php/custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Set ownership
 RUN chown -R appuser:appgroup /var/www/html
