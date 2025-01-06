@@ -2,26 +2,39 @@
 
 namespace HumoGen\Core\Console\Commands;
 
-use Database\Seeders\DatabaseSeeder;
+use HumoGen\Core\Console\Command;
+use HumoGen\Core\Database\Seeder;
 
-class SeedCommand
+class SeedCommand extends Command
 {
-    /**
-     * Run database seeds.
-     */
+    protected string $signature = 'db:seed';
+    protected string $description = 'Seed the database with records';
+
     public function handle(array $args = []): int
     {
-        $class = $args[1] ?? DatabaseSeeder::class;
-
+        $class = $args[0] ?? 'Database\\Seeders\\DatabaseSeeder';
+        
         if (!class_exists($class)) {
-            echo "Seeder class {$class} not found.\n";
+            $this->error("Seeder class not found: $class");
             return 1;
         }
 
         $seeder = new $class;
-        $seeder->run();
+        
+        if (!$seeder instanceof Seeder) {
+            $this->error("Class must extend HumoGen\\Core\\Database\\Seeder");
+            return 1;
+        }
 
-        echo "Database seeding completed successfully.\n";
-        return 0;
+        $this->info("Running seeder: $class");
+        
+        try {
+            $seeder->run();
+            $this->info('Database seeding completed successfully.');
+            return 0;
+        } catch (\Exception $e) {
+            $this->error('Database seeding failed: ' . $e->getMessage());
+            return 1;
+        }
     }
 } 
