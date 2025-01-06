@@ -41,6 +41,7 @@ services:
     tmpfs:
       - /tmp
       - /var/run
+      - /var/cache/nginx
 
   php:
     build:
@@ -92,17 +93,18 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MARIADB_AUTO_UPGRADE=1
+      - MARIADB_DISABLE_UPGRADE_BACKUP=1
     ports:
       - "127.0.0.1:${DB_PORT}:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
       - ./docker/mariadb/backup:/backup:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--password=${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD", "mariadb-admin", "ping", "-h", "127.0.0.1", "-u", "root", "--password=${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s
     networks:
       - humo-network
     deploy:
@@ -118,6 +120,11 @@ services:
       nofile:
         soft: 65536
         hard: 65536
+    cap_add:
+      - SYS_NICE
+    tmpfs:
+      - /tmp
+      - /run/mysqld
 
   adminer:
     image: docker.io/library/adminer:4.8.1-standalone

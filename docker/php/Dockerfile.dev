@@ -10,10 +10,10 @@ RUN apk add --no-cache --virtual .build-deps \
     oniguruma-dev \
     libxml2-dev
 
-# Install production dependencies
+# Install runtime dependencies
 RUN apk add --no-cache \
     libpng \
-    libonig \
+    oniguruma \
     libxml2
 
 # Install PHP extensions
@@ -49,7 +49,7 @@ COPY --from=builder /usr/bin/composer /usr/bin/composer
 # Install runtime dependencies
 RUN apk add --no-cache \
     libpng \
-    libonig \
+    oniguruma \
     libxml2
 
 # Set working directory
