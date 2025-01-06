@@ -41,7 +41,10 @@ This document tracks specific tasks for each modernization branch and phase. For
   - [ ] CacheInterface
   - [ ] ConfigInterface
   - [ ] EventDispatcherInterface
-- [ ] Implement PSR-11 container
+- [x] Implement PSR-11 container
+  - [x] Basic container implementation
+  - [x] Dependency resolution
+  - [x] Container tests
 - [ ] Add service providers
 - [ ] Configure core services
 - [ ] Add dependency injection
@@ -51,7 +54,6 @@ This document tracks specific tasks for each modernization branch and phase. For
 - [ ] Add scoped services
 - [ ] Implement lazy loading
 - [ ] Add circular dependency detection
-- [ ] Create container tests
 
 ### Error Handling
 - [ ] Implement error handler
