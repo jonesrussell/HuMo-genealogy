@@ -3,14 +3,22 @@
 namespace HumoGen\Core;
 
 use Dotenv\Dotenv;
+use HumoGen\Core\Container\Container;
+use HumoGen\Core\Contracts\ContainerInterface;
+use HumoGen\Core\Contracts\ServiceProviderInterface;
+use HumoGen\Core\Providers\DatabaseServiceProvider;
 
 class Application
 {
     protected static ?self $instance = null;
-    protected array $services = [];
+    protected ContainerInterface $container;
+    protected array $serviceProviders = [];
+    protected array $loadedProviders = [];
+    protected array $deferredProviders = [];
 
     protected function __construct()
     {
+        $this->container = new Container();
         $this->bootstrap();
     }
 
@@ -26,7 +34,8 @@ class Application
     protected function bootstrap(): void
     {
         $this->loadEnvironment();
-        $this->registerServices();
+        $this->registerBaseServiceProviders();
+        $this->bootServiceProviders();
     }
 
     protected function loadEnvironment(): void
@@ -71,42 +80,96 @@ class Application
         ]);
     }
 
-    protected function registerServices(): void
+    protected function registerBaseServiceProviders(): void
     {
-        // We're in Docker if we're running the command through docker compose exec
-        $inDocker = getenv('DOCKER_CONTAINER') === 'true';
-        
-        // Use internal Docker port if running in container, otherwise use host port
-        $port = $inDocker ? '3306' : ($_ENV['DB_PORT'] ?? '3306');
-
-        // Register database service
-        $this->services['db'] = new Database\Connection(
-            $_ENV['DB_HOST'],
-            $_ENV['DB_DATABASE'],
-            $_ENV['DB_USERNAME'],
-            $_ENV['DB_PASSWORD'],
-            $port
-        );
-    }
-
-    public function getService(string $name)
-    {
-        if (!isset($this->services[$name])) {
-            throw new \RuntimeException("Service '$name' not found.");
-        }
-
-        return $this->services[$name];
+        $this->register(new DatabaseServiceProvider());
     }
 
     /**
-     * Bind a service to the container.
+     * Register a service provider.
      */
-    public function bind(string $name, mixed $service): void
+    public function register(ServiceProviderInterface $provider): void
     {
-        if (is_callable($service)) {
-            $this->services[$name] = $service();
-        } else {
-            $this->services[$name] = $service;
+        $providerClass = get_class($provider);
+
+        if (isset($this->loadedProviders[$providerClass])) {
+            return;
         }
+
+        if ($provider->isDeferred()) {
+            foreach ($provider->provides() as $service) {
+                $this->deferredProviders[$service] = $provider;
+            }
+            return;
+        }
+
+        $provider->register($this);
+        $this->serviceProviders[] = $provider;
+        $this->loadedProviders[$providerClass] = true;
+    }
+
+    /**
+     * Boot all registered service providers.
+     */
+    protected function bootServiceProviders(): void
+    {
+        foreach ($this->serviceProviders as $provider) {
+            if (method_exists($provider, 'boot')) {
+                $provider->boot($this);
+            }
+        }
+    }
+
+    /**
+     * Load a deferred provider if the service is not loaded.
+     */
+    protected function loadDeferredProvider(string $service): void
+    {
+        if (!isset($this->deferredProviders[$service])) {
+            return;
+        }
+
+        $provider = $this->deferredProviders[$service];
+        $providerClass = get_class($provider);
+
+        if (!isset($this->loadedProviders[$providerClass])) {
+            $provider->register($this);
+            $this->loadedProviders[$providerClass] = true;
+        }
+    }
+
+    /**
+     * Get a service from the container.
+     *
+     * @throws \HumoGen\Core\Container\BindingResolutionException
+     */
+    public function getService(string $name): mixed
+    {
+        $this->loadDeferredProvider($name);
+        return $this->container->get($name);
+    }
+
+    /**
+     * Get the service container instance.
+     */
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
+    }
+
+    /**
+     * Register a binding with the container.
+     */
+    public function bind(string $abstract, mixed $concrete = null): void
+    {
+        $this->container->bind($abstract, $concrete);
+    }
+
+    /**
+     * Register a shared binding with the container.
+     */
+    public function singleton(string $abstract, mixed $concrete = null): void
+    {
+        $this->container->singleton($abstract, $concrete);
     }
 } 
